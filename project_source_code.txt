@@ -1,553 +1,3 @@
-export interface FormPage1 {
-  authName: string;
-  authId: string;
-  driverName: string;
-  driverId: string;
-  vehicleType: string;
-  vehicleNumber: string;
-  materialSource: string;
-  date: string;
-  materialCountNum: string;
-  materialCountText: string;
-  entryExit: "entry" | "exit" | "";
-}
-
-export interface MaterialItem {
-  id: number;
-  name: string;
-  note: string;
-}
-
-export interface SecurityPermitFormData {
-  page1: FormPage1;
-  items: MaterialItem[];
-}
-
-
------------------------------------------
-2. ملف الوظائف المساعدة واللوجستية والتحويل الرقمي بالتفقيط العربي (Utils)
-الموقع: /src/utils.ts
------------------------------------------
-/**
- * Utility functions for Security Permit Form
- */
-
-export function convertNumberToArabicWords(num: number): string {
-  if (num <= 0) return "لا توجد مواد";
-  
-  const units = ["", "مادة واحدة", "مادتان", "ثلاثة مواد", "أربعة مواد", "خمسة مواد", "ستة مواد", "سبعة مواد", "ثمانية مواد", "تسعة مواد", "عشرة مواد"];
-  const teens = ["عشرة مواد", "أحد عشر مادة", "اثنا عشر مادة", "ثلاثة عشر مادة", "أربعة عشر مادة", "خمسة عشر مادة", "ستة عشر مادة", "سبعة عشر مادة", "ثمانية عشر مادة", "تسعة عشر مادة"];
-  const tens = ["", "", "عشرون مادة", "ثلاثون مادة", "أربعون مادة", "خمسون مادة", "ستون مادة", "سبعون مادة", "ثمانون مادة", "تسعون مادة"];
-
-  if (num <= 10) {
-    return units[num] + " فقط لا غير";
-  }
-  
-  if (num < 20) {
-    return teens[num - 10] + " فقط لا غير";
-  }
-  
-  if (num < 100) {
-    const unit = num % 10;
-    const ten = Math.floor(num / 10);
-    if (unit === 0) {
-      return tens[ten] + " فقط لا غير";
-    }
-    const unitWord = unit === 1 ? "واحد" : unit === 2 ? "اثنان" : units[unit].split(" ")[0];
-    return `${unitWord} و${tens[ten]} فقط لا غير`;
-  }
-  
-  return `${num} مادة فقط لا غير`;
-}
-
-export function getTodayDateString(): string {
-  const d = new Date();
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-
------------------------------------------
-3. ملف تنسيقات المظهر والطباعة والخطوط الرسمية (CSS Stylesheet)
-الموقع: /src/index.css
------------------------------------------
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap');
-@import "tailwindcss";
-
-@theme {
-  --font-sans: "Cairo", system-ui, -apple-system, sans-serif;
-}
-
-body {
-  font-family: var(--font-sans);
-  background: #f3f4f6;
-  color: #1f2937;
-  direction: rtl;
-}
-
-/* Base print styling */
-@media print {
-  body {
-    background: white !important;
-    color: black !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .no-print {
-    display: none !important;
-  }
-  .print-page-break {
-    page-break-after: always;
-    page-break-inside: avoid;
-    break-after: page;
-  }
-  
-  .a4-page {
-    box-shadow: none !important;
-    margin: 0 auto !important;
-    padding: 6mm !important;
-    width: 210mm !important;
-    height: 297mm !important;
-    overflow: hidden !important;
-    page-break-after: always !important;
-    page-break-inside: avoid !important;
-    box-sizing: border-box !important;
-  }
-
-  .a4-page:last-child {
-    page-break-after: avoid !important;
-  }
-
-  /* Keep checklist checkboxes looking pristine on print */
-  .checkbox-box {
-    width: 5mm !important;
-    height: 5mm !important;
-    border: 1.5px solid #000 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-}
-
-/* Original Styles from the user draft to ensure zero layout divergence */
-.a4-page {
-    width: 210mm;
-    height: 297mm;
-    margin: 0 auto;
-    background: white;
-    padding: 6mm;
-    position: relative;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-    border: 2px solid #000;
-    box-sizing: border-box;
-}
-
-.watermark {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 140mm;
-    height: 140mm;
-    opacity: 0.10;
-    pointer-events: none;
-    z-index: 0;
-    background-image: url('imag.jpg');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.header {
-    position: relative;
-    height: 30mm;
-    border-bottom: 2px solid #000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3mm 5mm;
-    background: white;
-    z-index: 2;
-    width: calc(100% - 8mm);
-    margin: 0 auto;
-}
-
-.header-text-ar {
-    text-align: right;
-    color: #000;
-    font-weight: bold;
-    font-size: 11pt;
-    line-height: 1.5;
-    flex: 1;
-}
-
-.header-text-en {
-    text-align: left;
-    color: #000;
-    font-weight: bold;
-    font-size: 11pt;
-    line-height: 1.4;
-    direction: ltr;
-    flex: 1;
-}
-
-.logo-center {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    z-index: 3;
-}
-
-.logo-center img {
-    width: 28mm;
-    height: 30mm;
-    object-fit: contain;
-}
-
-.main-title {
-    text-align: center;
-    font-size: 13pt;
-    font-weight: bold;
-    color: #000;
-    margin: 4mm 0;
-    position: relative;
-    z-index: 2;
-    text-decoration: underline;
-}
-
-.form-container {
-    position: relative;
-    z-index: 2;
-    padding: 0 5mm;
-    height: calc(290mm - 30mm - 30mm - 20px);
-    overflow: hidden;
-    width: calc(100% - 8mm);
-    margin: 0 auto;
-}
-
-.form-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5mm;
-    gap: 3mm;
-}
-
-.form-group {
-    display: flex;
-    align-items: center;
-    flex: 1;
-}
-
-.form-group.half {
-    flex: 0 0 48%;
-}
-
-.form-group.date-group {
-    flex: 0 0 42%;
-}
-
-.form-group.source-group {
-    flex: 0 0 54%;
-}
-
-.form-label {
-    font-weight: bold;
-    font-size: 9pt;
-    white-space: nowrap;
-    margin-left: 1mm;
-    color: #000;
-}
-
-.form-label.small-label {
-    font-size: 8.5pt;
-}
-
-.form-input {
-    flex: 1;
-    height: 8mm;
-    border: 2px solid #000;
-    padding: 0 4mm;
-    font-size: 11pt;
-    border-radius: 2mm;
-    text-align: center;
-    background-color: transparent !important;
-    color: #000;
-    min-width: 30mm;
-    font-family: 'Cairo', sans-serif;
-    font-weight: bold;
-}
-
-.form-input.date-input {
-    min-width: 20mm;
-    max-width: 35mm;
-}
-
-.form-input:focus {
-    background-color: rgba(0, 0, 0, 0.03) !important;
-    outline: none;
-    border-color: #3b82f6;
-}
-
-.checkbox-row {
-    display: flex;
-    justify-content: center;
-    gap: 15mm;
-    margin: 3mm 0;
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 2mm;
-}
-
-.checkbox-box {
-    width: 6mm;
-    height: 6mm;
-    border: 2px solid #000;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    cursor: pointer;
-    font-size: 11pt;
-    font-weight: bold;
-    color: #000;
-    user-select: none;
-}
-
-.checkbox-label {
-    font-weight: bold;
-    font-size: 10pt;
-    cursor: pointer;
-}
-
-.signatures-section {
-    display: flex;
-    justify-content: space-between;
-    gap: 5mm;
-    margin: 4mm auto;
-    width: calc(100% - 6mm);
-    position: relative;
-    z-index: 2;
-}
-
-.signature-box-large {
-    border: 1.5px solid #000;
-    width: 80mm;
-    height: 30mm;
-    border-radius: 5mm;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: center;
-    text-align: center;
-    font-size: 9pt;
-    font-weight: bold;
-    background: transparent !important;
-    padding: 2mm;
-    position: relative;
-    z-index: 2;
-    white-space: nowrap;
-    color: #000;
-}
-
-.notes-section {
-    margin: 4mm auto;
-    width: calc(100% - 6mm);
-    position: relative;
-    z-index: 2;
-    color: #000;
-}
-
-.notes-title {
-    font-weight: bold;
-    font-size: 11pt;
-    margin-bottom: 2mm;
-    color: #000;
-}
-
-.notes-list {
-    list-style: none;
-    font-size: 10pt;
-    line-height: 1.5;
-    color: #000;
-}
-
-.notes-list li {
-    margin-bottom: 1mm;
-    position: relative;
-    padding-right: 4mm;
-}
-
-.notes-list li::before {
-    content: "❖";
-    position: absolute;
-    right: 0;
-    color: #000;
-}
-
-.page2-content {
-    position: relative;
-    z-index: 2;
-    padding: 2mm;
-    height: calc(100% - 10mm);
-    width: calc(100% - 6mm);
-    margin: 0 auto;
-}
-
-.page2-title {
-    text-align: center;
-    font-size: 12pt;
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 2mm;
-    margin-top: 0;
-    position: relative;
-    z-index: 2;
-    text-decoration: underline;
-}
-
-.main-table {
-    width: 98%;
-    margin: 0 auto;
-    border-collapse: collapse;
-}
-
-.main-table th {
-    background: #7986cb;
-    border: 1.5px solid #000;
-    padding: 0.5mm 1mm;
-    font-size: 10pt;
-    font-weight: bold;
-    text-align: center;
-    color: #000;
-    height: 7mm;
-}
-
-.main-table td {
-    border: 1.5px solid #000;
-    padding: 0.3mm 1mm;
-    font-size: 9.5pt;
-    text-align: center;
-    height: 7.2mm;
-    background: transparent;
-    color: #000;
-}
-
-.row-number {
-    font-weight: bold;
-    color: #c62828;
-    font-size: 9.5pt;
-}
-
-.table-input {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent !important;
-    text-align: center;
-    font-family: 'Cairo', Arial, sans-serif;
-    font-size: 9.5pt;
-    font-weight: bold;
-    outline: none;
-    padding: 0;
-    color: #000;
-}
-
-.footer {
-    position: absolute;
-    bottom: 5mm;
-    left: 15mm;
-    font-size: 8pt;
-    color: #666;
-    z-index: 2;
-}
-
-.footer-right {
-    position: absolute;
-    bottom: 5mm;
-    right: 15mm;
-    font-size: 8pt;
-    color: #666;
-    direction: ltr;
-    z-index: 2;
-}
-
-/* أزرار التحكم والأنماط الأصلية المفعّلة */
-.controls {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 15px auto;
-    width: 100%;
-}
-
-.btn {
-    padding: 10px 22px;
-    font-size: 11pt;
-    font-weight: bold;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    font-family: 'Cairo', sans-serif;
-    color: white !important;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-save {
-    background-color: #4caf50 !important;
-}
-.btn-save:hover {
-    background-color: #43a047 !important;
-}
-
-.btn-pdf {
-    background-color: #2196f3 !important;
-}
-.btn-pdf:hover {
-    background-color: #1e88e5 !important;
-}
-
-.btn-print {
-    background-color: #ff9800 !important;
-}
-.btn-print:hover {
-    background-color: #fb8c00 !important;
-}
-
-.btn-clear {
-    background-color: #f44336 !important;
-}
-.btn-clear:hover {
-    background-color: #e53935 !important;
-}
-
-
------------------------------------------
-4. الملف الرئيسي الذاتي العملي (Main App Code)
-الموقع: /src/App.tsx
------------------------------------------
 import React, { useState, useEffect, useMemo } from "react";
 import {
   FileText,
@@ -598,14 +48,12 @@ const INITIAL_ITEMS = (): MaterialItem[] => {
 };
 
 export default function App() {
-  // Step State
   const [activeTab, setActiveTab] = useState<"step1" | "step2" | "preview">("step1");
   const [formData, setFormData] = useState<SecurityPermitFormData>({
     page1: { ...INITIAL_PAGE1 },
     items: INITIAL_ITEMS()
   });
 
-  // Checklist verification states (Ministry workflow standard checklist)
   const [checklist, setChecklist] = useState({
     officialLetter: false,
     idVerified: false,
@@ -619,14 +67,12 @@ export default function App() {
     type: "success" | "info" | "error";
   } | null>(null);
 
-  // Auto load from LocalStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("ministry_permit_data");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.page1 && Array.isArray(parsed.items)) {
-          // ensure we have exactly 25 items
           let loadedItems = [...parsed.items];
           if (loadedItems.length < 25) {
             const extra = Array.from({ length: 25 - loadedItems.length }, (_, i) => ({
@@ -647,7 +93,6 @@ export default function App() {
     }
   }, []);
 
-  // Helper with toast alerts
   const showNotification = (message: string, type: "success" | "info" | "error" = "success") => {
     setNotification({ message, type });
     setTimeout(() => {
@@ -655,7 +100,6 @@ export default function App() {
     }, 4000);
   };
 
-  // Change handlers for page 1
   const handlePage1Change = (field: keyof FormPage1, value: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -666,7 +110,6 @@ export default function App() {
     }));
   };
 
-  // Change handlers for items
   const handleItemChange = (index: number, field: "name" | "note", value: string) => {
     setFormData((prev) => {
       const updatedItems = [...prev.items];
@@ -681,7 +124,6 @@ export default function App() {
     });
   };
 
-  // Quick helper to fill demo data
   const loadDemoData = () => {
     const demoItems = INITIAL_ITEMS();
     demoItems[0] = { id: 1, name: "شاشات عرض ذكية LED قياس 65 بوصة", note: "تجهيز قسم تكنولوجيا المعلومات لملعب المدينة الدولي" };
@@ -708,8 +150,6 @@ export default function App() {
     };
 
     setFormData(filledDemo);
-    
-    // Check off security items to make it professional
     setChecklist({
       officialLetter: true,
       idVerified: true,
@@ -721,13 +161,11 @@ export default function App() {
     showNotification("تم ملء الاستمارة ببيانات تجريبية رسمية نموذجية ✨", "success");
   };
 
-  // Save as Draft
   const saveDraft = () => {
     localStorage.setItem("ministry_permit_data", JSON.stringify(formData));
     showNotification("تم حفظ بيانات الاستمارتين في الذاكرة المحلية بنجاح 💾", "success");
   };
 
-  // Clear Form
   const clearForm = () => {
     if (window.confirm("هل أنت متأكد من رغبتك في تفريغ كافة الحقول وإعادة تصفير الاستمارة؟")) {
       setFormData({
@@ -746,7 +184,6 @@ export default function App() {
     }
   };
 
-  // Compute Active Items Length & Auto sync counts as a smart assistant logic
   const filledItemsCount = useMemo(() => {
     return formData.items.filter((item) => item.name.trim() !== "").length;
   }, [formData.items]);
@@ -769,7 +206,6 @@ export default function App() {
     showNotification(`تمت مزامنة العدد: تلقائياً تم حساب (${count}) مواد وكتابتها بالحروف! 🖋️`, "success");
   };
 
-  // Trigger Print / Save PDF directly without any blocking warning modals
   const triggerPrint = (isPDF: boolean = false) => {
     if (isPDF) {
       showNotification("جاري فتح واجهة تصدير PDF... يرجى اختيار 'حفظ بتنسيق PDF' كوجهة طباعة 📄", "success");
@@ -777,7 +213,6 @@ export default function App() {
       showNotification("جاري تشغيل واجهة الطباعة الفورية... 🖨️", "success");
     }
     
-    // Auto-sync material count silently before printing if they entered items but count is empty
     if (filledItemsCount > 0 && !formData.page1.materialCountNum) {
       const count = filledItemsCount;
       const countText = convertNumberToArabicWords(count);
@@ -796,7 +231,6 @@ export default function App() {
     }, 450);
   };
 
-  // Read state completeness for metrics visualization
   const completeness = useMemo(() => {
     const fields = [
       formData.page1.authName,
@@ -811,7 +245,7 @@ export default function App() {
       formData.page1.materialCountText
     ];
     const filledFieldsCount = fields.filter((f) => f.trim() !== "").length;
-    const itemsCount = filledItemsCount > 0 ? 1 : 0; // Check if they supplied at least 1 item
+    const itemsCount = filledItemsCount > 0 ? 1 : 0;
     const exitOptionFilled = formData.page1.entryExit !== "" ? 1 : 0;
     
     return Math.round(((filledFieldsCount + itemsCount + exitOptionFilled) / 12) * 100);
@@ -819,12 +253,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col antialiased">
-      {/* HUD HEADER - NO PRINT */}
-      <header className="no-print bg-slate-900 text-white shadow-xl border-b border-amber-500 sticky top-0 z-40 transition-all">
+      {/* شريط الإدارة والتحكم الذكي - معطل أثناء الطباعة بنسبة 100% */}
+      <header className="no-print bg-slate-900 text-white shadow-xl border-b border-amber-500 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             
-            {/* Top Logo and Title */}
             <div className="flex items-center gap-3">
               <div className="bg-white p-1 rounded-full shadow-lg border border-amber-400">
                 <IraqiCrest size={46} className="text-blue-900" />
@@ -836,18 +269,16 @@ export default function App() {
                   </span>
                   <span className="text-xs text-slate-400">مكتب التصاريح الأمنية</span>
                 </div>
-                <h1 className="text-lg font-bold text-white tracking-tight font-sans">
-                  منظومة الكترونية ذكية لملء استمارة دخل/خرج المواد وقائمتها
+                <h1 className="text-lg font-bold text-white tracking-tight">
+                  المنظومة الإلكترونية الذكية لإستمارات التصاريح الأمنية للمواد
                 </h1>
               </div>
             </div>
 
-            {/* Quick Actions Panel */}
-            <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={loadDemoData}
-                className="flex items-center gap-1 text-xs bg-indigo-700 hover:bg-indigo-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-indigo-500 shadow-sm cursor-pointer"
-                title="تعبئة بيانات تجريبية نموذجية سريعة لاختبار المعاينة"
+                className="flex items-center gap-1 text-xs bg-indigo-700 hover:bg-indigo-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-indigo-500 cursor-pointer"
               >
                 <Sparkles size={14} className="animate-pulse" />
                 <span>ملء عينة نموذجية</span>
@@ -855,32 +286,31 @@ export default function App() {
 
               <button
                 onClick={saveDraft}
-                className="flex items-center gap-1 text-xs bg-emerald-700 hover:bg-emerald-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-emerald-500 shadow-sm cursor-pointer"
+                className="flex items-center gap-1 text-xs bg-emerald-700 hover:bg-emerald-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-emerald-500 cursor-pointer"
               >
                 <Download size={14} />
-                <span>حفظ في المسودة (مسودة)</span>
+                <span>حفظ المسودة</span>
               </button>
 
               <button
                 onClick={clearForm}
-                className="flex items-center gap-1 text-xs bg-rose-700 hover:bg-rose-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-rose-500 shadow-sm cursor-pointer"
+                className="flex items-center gap-1 text-xs bg-rose-700 hover:bg-rose-600 font-medium py-2 px-3 rounded-md transition-all text-white border border-rose-500 cursor-pointer"
               >
                 <Trash2 size={14} />
-                <span>مسح البيانات</span>
+                <span>تصفير الاستمارة</span>
               </button>
 
               <button
-                onClick={triggerPrint}
-                className="flex items-center gap-1.5 text-xs bg-amber-500 hover:bg-amber-400 font-bold py-2 px-4 rounded-md transition-all text-slate-900 shadow-md cursor-pointer scale-105 active:scale-95"
+                onClick={() => triggerPrint(false)}
+                className="flex items-center gap-1.5 text-xs bg-amber-500 hover:bg-amber-400 font-bold py-2 px-4 rounded-md transition-all text-slate-900 shadow-md cursor-pointer scale-105"
               >
                 <Printer size={15} />
-                <span>طباعة / حفظ كـ PDF</span>
+                <span>طباعة / تصدير PDF</span>
               </button>
             </div>
 
           </div>
 
-          {/* Stepper Tabs with complete visual flow */}
           <div className="flex items-center justify-between border-t border-slate-800 mt-3 pt-2">
             <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-full">
               <button
@@ -896,9 +326,7 @@ export default function App() {
               </button>
 
               <button
-                onClick={() => {
-                  setActiveTab("step2");
-                }}
+                onClick={() => setActiveTab("step2")}
                 className={`flex items-center gap-2 py-2 px-4 rounded-md text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "step2"
                     ? "bg-amber-500 text-slate-950 px-5 shadow"
@@ -907,7 +335,7 @@ export default function App() {
               >
                 <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-950 text-amber-400 text-[10px] font-bold">٢</span>
                 الورقة الثانية: جدول المواد وقائمة الكميات 
-                {filledItemsCount > 0 && <span className="bg-blue-600 text-white rounded-full text-[9px] px-1.5">{filledItemsCount}</span>}
+                {filledItemsCount > 0 && <span className="bg-blue-600 text-white rounded-full text-[9px] px-1.5 mr-1">{filledItemsCount}</span>}
               </button>
 
               <button
@@ -923,7 +351,6 @@ export default function App() {
               </button>
             </div>
 
-            {/* Smart progress meter */}
             <div className="hidden sm:flex items-center gap-3 mr-4">
               <div className="text-left">
                 <div className="text-[10px] text-slate-400">نسبة اكتمال الملء</div>
@@ -941,14 +368,13 @@ export default function App() {
         </div>
       </header>
 
-      {/* NOTIFICATION NOTIFY TOAST */}
       <AnimatePresence>
         {notification && (
           <motion.div
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="no-print fixed top-24 left-4 right-4 md:left-auto md:w-96 bg-slate-900 border-r-4 border-amber-500 text-white rounded-lg p-3 shadow-2xl flex items-center gap-3 z-50 transform pointer-events-auto"
+            className="no-print fixed top-24 left-4 right-4 md:left-auto md:w-96 bg-slate-900 border-r-4 border-amber-500 text-white rounded-lg p-3 shadow-2xl flex items-center gap-3 z-50 pointer-events-auto"
           >
             <div className="text-amber-500 flex-shrink-0">
               <CheckCircle2 size={18} />
@@ -958,13 +384,11 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* CORE WORKSPACE */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
         
-        {/* RIGHT INPUT PANEL - INTERACTIVE STEP BUILDER (no-print) */}
+        {/* شاشة إدخال وتعديل البيانات */}
         <div className={`no-print flex-1 lg:max-w-md ${activeTab === "preview" ? "hidden" : "block"}`}>
           
-          {/* STEP 1: EMPLOYEE DETAILS MODULE */}
           {activeTab === "step1" && (
             <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
               <div className="bg-slate-800 text-slate-100 p-4 border-b border-amber-500">
@@ -973,9 +397,6 @@ export default function App() {
                     <User className="text-amber-500" size={18} />
                     <h2 className="font-bold text-sm tracking-wide">الورقة الأولى: بيانات الترخيص والمخول</h2>
                   </div>
-                  <span className="text-[10px] bg-amber-500 bg-opacity-20 text-amber-600 px-2 py-0.5 rounded-full font-bold">
-                    أعمال تملأ اولاً
-                  </span>
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
                   قم بملء البيانات الأساسية للموظف المخول وسائق المركبة لتفعيل الترخيص.
@@ -983,7 +404,6 @@ export default function App() {
               </div>
 
               <div className="p-5 space-y-4">
-                {/* Entry or Exit Direction switch */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-2">نوع الحركة الرسمية للمواد</label>
                   <div className="grid grid-cols-2 gap-3">
@@ -999,7 +419,7 @@ export default function App() {
                       <span className={`w-3 h-3 rounded-full border flex items-center justify-center ${formData.page1.entryExit === "entry" ? "bg-blue-600 border-transparent" : "border-slate-300"}`}>
                         {formData.page1.entryExit === "entry" && <Check size={10} className="text-white" />}
                       </span>
-                      <span>إدخل مواد (استيراد/توريد)</span>
+                      <span>إدخال مواد (استيراد/توريد)</span>
                     </button>
                     
                     <button
@@ -1021,18 +441,14 @@ export default function App() {
 
                 <div className="border-t border-slate-100 my-2"></div>
 
-                {/* Section A: Authorized Person info */}
                 <div className="space-y-3">
-                  <h3 className="text-xs font-bold text-indigo-700 flex items-center gap-1">
-                    <span>•</span>
-                    <span>بيانات المخول بالاستلام والتسليم</span>
-                  </h3>
+                  <h3 className="text-xs font-bold text-indigo-700">بيانات المسؤول المخول بالاستلام والتسليم</h3>
                   
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">اسم المخول الكلي (الثلاثي) <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">اسم المسؤول ثلاثي</label>
                     <input
                       type="text"
-                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                       placeholder="املاء اسم المسؤول المخول الثلاثي"
                       value={formData.page1.authName}
                       onChange={(e) => handlePage1Change("authName", e.target.value)}
@@ -1040,10 +456,10 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">رقم هوية الأحوال / الموحدة للمخول <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">رقم هوية الأحوال للمسؤول</label>
                     <input
                       type="text"
-                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                       placeholder="مثال: IQ-09184024"
                       value={formData.page1.authId}
                       onChange={(e) => handlePage1Change("authId", e.target.value)}
@@ -1051,18 +467,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Section B: Driver info */}
                 <div className="space-y-3 pt-2">
-                  <h3 className="text-xs font-bold text-indigo-700 flex items-center gap-1">
-                    <span>•</span>
-                    <span>معلومات سائق العجلة المرافقة</span>
-                  </h3>
+                  <h3 className="text-xs font-bold text-indigo-700">معلومات سائق العجلة المرافقة</h3>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">اسم السائق الثلاثي <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">اسم السائق الثلاثي</label>
                     <input
                       type="text"
-                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                       placeholder="املاء اسم السائق المرافق كامل"
                       value={formData.page1.driverName}
                       onChange={(e) => handlePage1Change("driverName", e.target.value)}
@@ -1070,10 +482,10 @@ export default function App() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">رقم هوية السائق الوطنية <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">رقم هوية السائق الوطنية</label>
                     <input
                       type="text"
-                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                       placeholder="مثال: IQ-23214152"
                       value={formData.page1.driverId}
                       onChange={(e) => handlePage1Change("driverId", e.target.value)}
@@ -1081,18 +493,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Section C: Vehicle info */}
                 <div className="space-y-3 pt-2">
-                  <h3 className="text-xs font-bold text-indigo-700 flex items-center gap-1">
-                    <span>•</span>
-                    <span>مواصفات المركبة (العجلة)</span>
-                  </h3>
+                  <h3 className="text-xs font-bold text-indigo-700">مواصفات المركبة (العجلة)</h3>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs font-bold text-slate-600 block mb-1">نوع المركبة</label>
                       <select
-                        className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none bg-white font-sans font-bold"
+                        className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none bg-white font-sans"
                         value={formData.page1.vehicleType}
                         onChange={(e) => handlePage1Change("vehicleType", e.target.value)}
                       >
@@ -1110,7 +518,7 @@ export default function App() {
                       <label className="text-xs font-bold text-slate-600 block mb-1">رقم لوحة العجلة</label>
                       <input
                         type="text"
-                        className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                        className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                         placeholder="مثال: بغداد - 14932 / أ"
                         value={formData.page1.vehicleNumber}
                         onChange={(e) => handlePage1Change("vehicleNumber", e.target.value)}
@@ -1119,18 +527,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Section D: Source & Date */}
                 <div className="space-y-3 pt-2">
-                  <h3 className="text-xs font-bold text-indigo-700 flex items-center gap-1">
-                    <span>•</span>
-                    <span>منشأ الشحنة والتاريخ</span>
-                  </h3>
+                  <h3 className="text-xs font-bold text-indigo-700">منشأ الشحنة والتاريخ</h3>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-600 block mb-1">منشأ أو وجهة المواد (الدائرة/القسم/الشركة) <span className="text-rose-500">*</span></label>
+                    <label className="text-xs font-bold text-slate-600 block mb-1">منشأ أو وجهة المواد (الدائرة/القسم)</label>
                     <input
                       type="text"
-                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
                       placeholder="ما هي الدائرة مصدر هذه الشحنة؟"
                       value={formData.page1.materialSource}
                       onChange={(e) => handlePage1Change("materialSource", e.target.value)}
@@ -1139,35 +543,31 @@ export default function App() {
 
                   <div>
                     <label className="text-xs font-bold text-slate-600 block mb-1">تاريخ الترخيص الفعلي</label>
-                    <div className="relative">
-                      <input
-                        type="date"
-                        className="w-full text-xs p-2.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-100 focus:border-indigo-500 outline-none"
-                        value={formData.page1.date}
-                        onChange={(e) => handlePage1Change("date", e.target.value)}
-                      />
-                    </div>
+                    <input
+                      type="date"
+                      className="w-full text-xs p-2.5 border border-slate-200 rounded-lg outline-none"
+                      value={formData.page1.date}
+                      onChange={(e) => handlePage1Change("date", e.target.value)}
+                    />
                   </div>
                 </div>
 
-                {/* Section E: Manual Count values overrides */}
                 <div className="space-y-3 pt-2 bg-slate-50 p-3 rounded-lg border border-slate-150">
                   <h3 className="text-xs font-bold text-slate-850 flex items-center justify-between">
-                    <span>• تفاصيل الأعداد (الصفحة الأولى)</span>
+                    <span>تفاصيل الأعداد (الصفحة الأولى)</span>
                     <button
                       type="button"
                       onClick={autoSyncMaterialCount}
                       className="text-[10px] text-blue-600 font-bold hover:underline flex items-center gap-1 cursor-pointer"
-                      title="مزامنة الأعداد مع قائمة المواد المدخلة في الصفحة الثانية"
                     >
                       <RefreshCw size={10} />
-                      مزامنة ذكية من الصفحة ٢
+                      مزامنة من الصفحة ٢
                     </button>
                   </h3>
 
                   <div className="grid grid-cols-3 gap-2">
                     <div className="col-span-1">
-                      <label className="text-[10px] font-bold text-slate-500 block mb-0.5">العدد رقماً</label>
+                      <label className="text-[10px] font-bold text-slate-500 block">العدد رقماً</label>
                       <input
                         type="text"
                         className="w-full text-xs p-2 border border-slate-200 rounded bg-white text-center font-bold"
@@ -1178,11 +578,11 @@ export default function App() {
                     </div>
 
                     <div className="col-span-2">
-                      <label className="text-[10px] font-bold text-slate-500 block mb-0.5">العدد كتابة وتفقيطاً بالعربية</label>
+                      <label className="text-[10px] font-bold text-slate-500 block">العدد كتابة وتفقيطاً بالعربية</label>
                       <input
                         type="text"
-                        className="w-full text-xs p-2 border border-slate-200 rounded bg-white text-right font-sans font-bold"
-                        placeholder="مثال: خمسة مواد فقط لا غير"
+                        className="w-full text-xs p-2 border border-slate-200 rounded bg-white text-right font-bold text-blue-900"
+                        placeholder="خمسة مواد فقط لا غير"
                         value={formData.page1.materialCountText}
                         onChange={(e) => handlePage1Change("materialCountText", e.target.value)}
                       />
@@ -1190,15 +590,14 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Wizard navigation */}
                 <div className="pt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setActiveTab("step2");
-                      showNotification("تم الانتقال للورقة الثانية لتعبئة قائمة المواد بالتفصيل 🗒️", "info");
+                      showNotification("تم الانتقال لتعبئة قائمة المواد بالتفصيل 🗒️", "info");
                     }}
-                    className="w-full flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all cursor-pointer font-sans"
+                    className="w-full flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold py-3 px-4 rounded-lg shadow-md cursor-pointer"
                   >
                     <span>الانتقال لتعبئة قائمة المواد (الصفحة الثانية)</span>
                     <ChevronLeft size={14} />
@@ -1209,47 +608,44 @@ export default function App() {
             </div>
           )}
 
-          {/* STEP 2: MATERIAL GRID ROWS DATA INPUT */}
           {activeTab === "step2" && (
             <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
               <div className="bg-slate-800 text-slate-100 p-4 border-b border-amber-500">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileSpreadsheet className="text-amber-500" size={18} />
-                    <h2 className="font-bold text-sm tracking-wide">الورقة الثانية: قائمة المواد المدخلة/المخرجة</h2>
+                    <h2 className="font-bold text-sm">الورقة الثانية: قائمة المواد المدخلة/المخرجة</h2>
                   </div>
-                  <span className="text-[10px] bg-blue-500 bg-opacity-20 text-blue-400 px-2.5 py-0.5 rounded-full font-bold">
-                    جدول مخصص لـ ٢٥ مادة
+                  <span className="text-[10px] bg-blue-500 bg-opacity-20 text-blue-400 px-2 py-0.5 rounded-full font-bold">
+                    ٢٥ حقل مخصص
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-sans">
-                  قم بملء حقول المواد بالتفصيل. اضغظ على المزامنة الذكية لحساب العدد تلقائياً ونقله للصفحة الأولى.
+                <p className="text-xs text-slate-400 mt-1">
+                  قم بملء حقول المواد بالتفصيل. اضغط على المزامنة الذكية لحساب العدد تلقائياً ونقله للصفحة الأولى.
                 </p>
               </div>
 
-              {/* Intelligent helper panel */}
               <div className="bg-indigo-50 p-3.5 border-b border-indigo-100 flex items-start gap-4 justify-between">
                 <div>
                   <div className="text-[11px] font-bold text-indigo-900 flex items-center gap-1.5">
                     <Info size={13} />
-                    <span>منظم الإعداد الذكي المساعد</span>
+                    <span>منظم الأعداد والمزامنة المساعد</span>
                   </div>
                   <p className="text-[10px] text-indigo-700 leading-relaxed mt-0.5 font-sans">
-                    قم بإضافة المواد بشكل متتالي. عدد المواد المكتوبة حالياً في هذا الجدول هو <span className="font-bold">{filledItemsCount} مادة</span>.
+                    عدد المواد المكتوبة حالياً في هذا الجدول هو <span className="font-bold">{filledItemsCount} مادة</span>.
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={autoSyncMaterialCount}
-                  className="flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg flex items-center gap-1 shadow-sm transition-all cursor-pointer font-sans"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg flex items-center gap-1 shadow-sm cursor-pointer"
                 >
-                  <RefreshCw size={11} className="animate-spin-hover" />
+                  <RefreshCw size={11} />
                   مزامنة وتفقيط تلقائي
                 </button>
               </div>
 
-              {/* Rows List Input form */}
               <div className="p-4 space-y-3 max-h-[460px] overflow-y-auto scrollbar-thin">
                 {formData.items.map((item, index) => {
                   const isActive = item.name.trim() !== "";
@@ -1272,20 +668,20 @@ export default function App() {
                             type="text"
                             value={item.name}
                             onChange={(e) => handleItemChange(index, "name", e.target.value)}
-                            className="w-full text-xs font-sans font-bold p-1.5 border border-slate-150 rounded bg-white outline-none focus:border-indigo-400"
-                            placeholder="اكتب وصف المادة بالتفصيل (مثال: شاشة عرض 55 بوصة)"
+                            className="w-full text-xs font-medium p-1.5 border border-slate-150 rounded bg-white outline-none focus:border-indigo-400"
+                            placeholder="اكتب وصف المادة بالتفصيل (مثال: حاسوب محمول HP)"
                           />
                         </div>
                       </div>
 
-                      <div className="flex gap-2 mr-7 font-sans">
+                      <div className="flex gap-2 mr-7">
                         <span className="text-[10px] text-slate-400 self-center">ملاحظات:</span>
                         <input
                           type="text"
                           value={item.note}
                           onChange={(e) => handleItemChange(index, "note", e.target.value)}
-                          className="flex-1 text-[11px] font-sans p-1 border border-slate-150 rounded bg-white outline-none focus:border-indigo-400"
-                          placeholder="مثال: للتسليم لمدير القسم"
+                          className="flex-1 text-[11px] p-1 border border-slate-150 rounded bg-white outline-none focus:border-indigo-400"
+                          placeholder="ملاحظات المادة أو الرقم التسلسلي"
                         />
                       </div>
                     </div>
@@ -1293,14 +689,14 @@ export default function App() {
                 })}
               </div>
 
-              <div className="p-4 bg-slate-50 border-t border-slate-150 flex items-center justify-between gap-3 font-sans">
+              <div className="p-4 bg-slate-50 border-t border-slate-150 flex items-center justify-between gap-3">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveTab("step1");
                     showNotification("العودة لبيانات المخول والسائق 🚕", "info");
                   }}
-                  className="bg-white hover:bg-slate-100 text-slate-600 border border-slate-250 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-1 transition-all cursor-pointer font-sans"
+                  className="bg-white hover:bg-slate-100 text-slate-600 border border-slate-250 text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-1 cursor-pointer"
                 >
                   <ChevronRight size={14} />
                   <span>العودة للورقة الأولى</span>
@@ -1312,7 +708,7 @@ export default function App() {
                     setActiveTab("preview");
                     showNotification("تم عرض المعاينة النهائية للصفحتين للطباعة 📃", "success");
                   }}
-                  className="bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-1 transition-all cursor-pointer font-sans"
+                  className="bg-slate-900 hover:bg-slate-850 text-white text-xs font-bold py-2.5 px-4 rounded-lg flex items-center gap-1 cursor-pointer"
                 >
                   <span>عرض المعاينة الكاملة</span>
                   <Layers size={14} />
@@ -1321,37 +717,33 @@ export default function App() {
             </div>
           )}
 
-          {/* CHECKLIST SIDEBAR AND SECURITY RULES (no-print) */}
-          <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mt-6 p-4 font-sans">
+          {/* المتطلبات الأمنية ومراجعة الاستمارة */}
+          <div className="bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden mt-6 p-4">
             <h3 className="font-bold text-xs text-slate-800 flex items-center gap-2 mb-3">
               <ShieldCheck className="text-amber-500" size={16} />
               <span>المتطلبات الأمنية ومراجعة الاستمارة</span>
             </h3>
 
-            <p className="text-[11px] text-slate-500 mb-3 leading-relaxed">
-              وفقاً لقانون حماية المنشآت والباب الرئيسي بوزارة الشباب والرياضة، يرجى مراجعة الشروط وتأكيدها:
-            </p>
-
             <div className="space-y-2">
-              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer hover:bg-slate-100 transition-all select-none">
+              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={checklist.officialLetter}
                   onChange={(e) => setChecklist({ ...checklist, officialLetter: e.target.checked })}
-                  className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4 ml-2"
+                  className="mt-0.5 rounded border-slate-300 text-amber-500 w-4 h-4 ml-2"
                 />
                 <div className="text-[11px] text-slate-600">
-                  <span className="font-bold block text-slate-800">1. كتاب رسمي مختوم ومصدق</span>
+                  <span className="font-bold block text-slate-800">1. كتاب رسمي مكتوم ومصدق</span>
                   أرفقت صورة من كتاب الطلب الرسمي المعتمد من الدائرة المرسلة
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer hover:bg-slate-100 transition-all select-none">
+              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={checklist.idVerified}
                   onChange={(e) => setChecklist({ ...checklist, idVerified: e.target.checked })}
-                  className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4 ml-2"
+                  className="mt-0.5 rounded border-slate-300 text-amber-500 w-4 h-4 ml-2"
                 />
                 <div className="text-[11px] text-slate-600">
                   <span className="font-bold block text-slate-800">2. هويات المخول والسائق</span>
@@ -1359,252 +751,198 @@ export default function App() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer hover:bg-slate-100 transition-all select-none">
+              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={checklist.vehicleRegistered}
                   onChange={(e) => setChecklist({ ...checklist, vehicleRegistered: e.target.checked })}
-                  className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4 ml-2"
+                  className="mt-0.5 rounded border-slate-300 text-amber-500 w-4 h-4 ml-2"
                 />
                 <div className="text-[11px] text-slate-600">
-                  <span className="font-bold block text-slate-800">3. سنوية وأرقام العجلة</span>
-                  تم فحص لوحات السيارة وسنويتها لضمان تصريح الدخول للحدود الشبابية
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 p-2 bg-slate-50 rounded border border-slate-150 cursor-pointer hover:bg-slate-100 transition-all select-none">
-                <input
-                  type="checkbox"
-                  checked={checklist.timingCheck}
-                  onChange={(e) => setChecklist({ ...checklist, timingCheck: e.target.checked })}
-                  className="mt-0.5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 w-4 h-4 ml-2"
-                />
-                <div className="text-[11px] text-slate-600">
-                  <span className="font-bold block text-slate-800">4. حركة المواد قبل الـ 6 مساءً</span>
-                  أقر بأن الحركة ستنفذ بالكامل قبل انتهاء الدوام الفعلي وحظر دخول البوابة
+                  <span className="font-bold block text-slate-800">3. أرقام سنوية المركبة</span>
+                  تم فحص لوحات السيارة وسنويتها لضمان ترخيص حركة المواد والدخول
                 </div>
               </label>
             </div>
             
             <div className="mt-3 text-[10px] text-slate-400 bg-slate-900 text-slate-200 p-2.5 rounded-lg flex items-center gap-2">
               <AlertCircle size={12} className="text-amber-400 flex-shrink-0" />
-              <span>ملاحظة: تحتفظ هذه المنظومة بالمدخلات مؤقتاً لحين طباعتها. البيانات آمنة كلياً.</span>
+              <span>تحتفظ هذه المنظومة بالمدخلات مؤقتاً لحين طباعتها. البيانات آمنة كلياً داخل حاسوبك المكتبي.</span>
             </div>
           </div>
 
         </div>
 
-        {/* LEFT DISPLAY PANEL - THE HIGH FIDELITY PRINTABLE DOCUMENTS */}
+        {/* جبهة العرض النهائية والطباعة بالقياس والملف القياسي A4 العراقي */}
         <div className="flex-1 overflow-x-auto p-1 bg-slate-200 rounded-xl border border-slate-300 shadow-inner flex flex-col items-center gap-8 py-8">
           
           <div className="no-print w-full flex justify-between px-6 mb-2">
-            <span className="text-xs font-bold text-slate-600 flex items-center gap-2 font-sans font-bold">
+            <span className="text-xs font-bold text-slate-600 flex items-center gap-2">
               <FileText size={14} className="text-blue-900" />
-              <span>معاينة حية ومطابقة لمقياس القياسي (A4) للاستمارة الرسمية للطباعة والترخيص</span>
+              <span>معاينة حية ومطابقة لمقياس (A4) للاستمارة الرسمية للطباعة والترخيص</span>
             </span>
             <div className="flex items-center gap-2 bg-slate-300 text-slate-800 py-1 px-3 rounded-full text-[10px] font-bold">
               <span>الحجم الافتراضي: 210mm × 297mm</span>
             </div>
           </div>
 
-          {/* أزرار التحكم - Controls Panel perfectly styled and fully active */}
-          <div className="no-print controls">
-            <button
-              onClick={saveDraft}
-              className="btn btn-save cursor-pointer"
-              title="حفظ بيانات الاستمارة كمسودة في المتصفح"
-            >
-              <span>💾 حفظ البيانات</span>
-            </button>
-            <button
-              onClick={() => triggerPrint(true)}
-              className="btn btn-pdf cursor-pointer"
-              title="تصدير وحفظ الاستمارة بصيغة ملف PDF"
-            >
-              <span>📄 حفظ PDF</span>
-            </button>
-            <button
-              onClick={() => triggerPrint(false)}
-              className="btn btn-print cursor-pointer"
-              title="طباعة الاستمارة الرسمية مباشرة"
-            >
-              <span>🖨️ طباعة البيانات</span>
-            </button>
-            <button
-              onClick={clearForm}
-              className="btn btn-clear cursor-pointer"
-              title="مسح كافة البيانات وإعادة التصفير"
-            >
-              <span>🗑️ مسح البيانات</span>
-            </button>
-          </div>
-
-          {/* PAGE 1 OFFICIAL SHEET SIMULATION */}
+          {/* صفحة الاستمارة الأولى - معلومات الموظف والعجلة */}
           {(activeTab === "step1" || activeTab === "preview") && (
             <div
               id="formPage1"
               className="a4-page shadow-2xl relative bg-white mx-auto print-page-break shrink-0"
             >
-              {/* علامة مائية في منتصف الصفحة */}
               <div className="watermark"></div>
 
-              {/* الترويسة */}
+              {/* ترويسة الوزارة وشعار جمهورية العراق باللغتين العربية والكردية والإنكليزية */}
               <div className="header">
                 <div className="header-text-ar">
-                  <div>جمهورية العراق</div>
-                  <div>وزارة الشباب والرياضة</div>
-                  <div>مكتب الوزير</div>
-                  <div>مكتب التصاريح الأمنية</div>
+                  جمهورية العراق
+                  <br />
+                  وزارة الشباب والرياضة
+                  <br />
+                  الدائرة لمكتب التصاريح الأمنية
                 </div>
-
+                
                 <div className="logo-center">
-                  <img src="imag.jpg" alt="شعار الوزارة" onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }} />
+                  <IraqiCrest size={80} />
                 </div>
-
+                
                 <div className="header-text-en">
-                  <div>REPUBLIC OF IRAQ</div>
-                  <div>Ministry Of Youth & Sport</div>
-                  <div>Minister Office</div>
-                  <div>Security Permits Office</div>
+                  Republic of Iraq
+                  <br />
+                  Ministry of Youth & Sports
+                  <br />
+                  Security Permits Office
                 </div>
               </div>
 
-              {/* العنوان الرئيسي */}
-              <div className="main-title">استمارة (إخراج / ادخال) مواد</div>
+              <div className="main-title">استمارة ترخيص (إدخال / إخراج) مواد رسمية</div>
 
-              {/* الحقول */}
+              {/* هيكلية الاستمارة الأساسية */}
               <div className="form-container">
-                {/* الصف الأول */}
                 <div className="form-row">
-                  <div className="form-group half">
-                    <label className="form-label">اسم المخول الثلاثي:</label>
+                  <div className="form-group">
+                    <span className="form-label">اسم المسؤول المخول:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="authName"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.authName}
                       onChange={(e) => handlePage1Change("authName", e.target.value)}
+                      placeholder="..................................................................."
                     />
                   </div>
-                  <div className="form-group half">
-                    <label className="form-label">رقم هوية المخول:</label>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <span className="form-label">رقم هوية الأحوال / الموحدة:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="authId"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.authId}
                       onChange={(e) => handlePage1Change("authId", e.target.value)}
+                      placeholder="..................................................................."
                     />
                   </div>
                 </div>
 
-                {/* الصف الثاني */}
                 <div className="form-row">
-                  <div className="form-group half">
-                    <label className="form-label">اسم السائق الثلاثي:</label>
+                  <div className="form-group">
+                    <span className="form-label">اسم السائق الثلاثي:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="driverName"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.driverName}
                       onChange={(e) => handlePage1Change("driverName", e.target.value)}
+                      placeholder="..................................................................."
                     />
                   </div>
-                  <div className="form-group half">
-                    <label className="form-label">رقم هوية السائق:</label>
+                  
+                  <div className="form-group">
+                    <span className="form-label">رقم الهوية الوطنية:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="driverId"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.driverId}
                       onChange={(e) => handlePage1Change("driverId", e.target.value)}
+                      placeholder=".........................................."
                     />
                   </div>
                 </div>
 
-                {/* الصف الثالث */}
                 <div className="form-row">
-                  <div className="form-group half">
-                    <label className="form-label">نوع العجلة:</label>
+                  <div className="form-group">
+                    <span className="form-label">نوع المركبة:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="vehicleType"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.vehicleType}
                       onChange={(e) => handlePage1Change("vehicleType", e.target.value)}
+                      placeholder=".........................................."
                     />
                   </div>
-                  <div className="form-group half">
-                    <label className="form-label">رقم العجلة:</label>
+                  
+                  <div className="form-group">
+                    <span className="form-label">رقم لوحة المركبة:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="vehicleNumber"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.vehicleNumber}
                       onChange={(e) => handlePage1Change("vehicleNumber", e.target.value)}
+                      placeholder=".........................................."
                     />
                   </div>
                 </div>
 
-                {/* الصف الرابع - تم تعديله */}
                 <div className="form-row">
                   <div className="form-group source-group">
-                    <label className="form-label">منشأ المواد:</label>
+                    <span className="form-label">منشأ / جهة المواد:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="materialSource"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.materialSource}
                       onChange={(e) => handlePage1Change("materialSource", e.target.value)}
+                      placeholder="..................................................................."
                     />
                   </div>
+
                   <div className="form-group date-group">
-                    <label className="form-label small-label">تاريخ (ادخال/خروج) المواد:</label>
+                    <span className="form-label">التاريخ الفعلي:</span>
                     <input
                       type="text"
-                      className="form-input date-input font-mono"
-                      id="date"
-                      autoComplete="off"
+                      className="form-input text-blue-900 date-input"
                       value={formData.page1.date}
                       onChange={(e) => handlePage1Change("date", e.target.value)}
                     />
                   </div>
                 </div>
 
-                {/* الصف الخامس */}
                 <div className="form-row">
-                  <div className="form-group half">
-                    <label className="form-label">عدد المواد رقماً:</label>
+                  <div className="form-group">
+                    <span className="form-label">محدد بعدد كلي رقماً:</span>
                     <input
                       type="text"
-                      className="form-input font-mono"
-                      id="materialCountNum"
-                      autoComplete="off"
+                      className="form-input text-blue-900 text-center"
                       value={formData.page1.materialCountNum}
                       onChange={(e) => handlePage1Change("materialCountNum", e.target.value)}
+                      placeholder="رقماً"
                     />
                   </div>
-                  <div className="form-group half">
-                    <label className="form-label">عدد المواد كتابةً:</label>
+
+                  <div className="form-group" style={{ flex: 2 }}>
+                    <span className="form-label">العدد كتابة:</span>
                     <input
                       type="text"
-                      className="form-input"
-                      id="materialCountText"
-                      autoComplete="off"
+                      className="form-input text-blue-900"
                       value={formData.page1.materialCountText}
                       onChange={(e) => handlePage1Change("materialCountText", e.target.value)}
+                      placeholder="كتابة وتفقيطاً باللغة العربية"
                     />
                   </div>
                 </div>
 
-                {/* ===== خانات الاختيار المعدلة ===== */}
+                {/* مربعات الحركة الرسمية: ادخال / اخراج */}
                 <div className="checkbox-row">
                   <div
                     className="checkbox-group cursor-pointer"
@@ -1622,80 +960,83 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* مناطق التوقيع */}
+                {/* مديري التوقيعات الرسمية المعتمدة */}
                 <div className="signatures-section">
                   <div className="signature-box-large">
-                    ختم وتوقيع مدير الدائرة
+                    توقيع الموظف المخول وصاحب الشحنة
+                    <div className="text-[10px] text-slate-500 mt-1">التوقيع والاسم: .......................................</div>
                   </div>
                   <div className="signature-box-large">
-                    ختم وتوقيع مدير قسم التصاريح الأمنية
+                    مصادقة وتوقيع مسؤول أمن البوابة الرسمية
+                    <div className="text-[10px] text-slate-500 mt-1">التوقيع والاسم: .......................................</div>
                   </div>
                 </div>
 
-                {/* الملاحظات */}
                 <div className="notes-section">
-                  <div className="notes-title">ملاحظة :-</div>
-                  <ul className="notes-list font-sans">
-                    <li>يرفق الاستمارة بكتاب طلب رسمي من الدائرة المعنية ومختومة من نفس الدائرة.</li>
-                    <li>يرفق نسخة من هوية المخول وهوية السائق وسنوية العجلة.</li>
-                    <li>في حال دخول اشخاص لغرض اقامة نشاط او وحدة تدريبية كلاعبي او اعضاء الفرق والاندية والمنتخبات / يرفق قائمة بالأسماء ونسخة من هوياتهم.</li>
-                    <li>يكون تقديم الطلب مسبقاً قبل يومين.</li>
-                    <li>يسمح بدخول وخروج المواد لغاية الساعة السادسة مساءاً.</li>
-                    <li>يمنع ادخال واخراج المواد في أيام العطل الرسمية.</li>
-                  </ul>
+                  <div className="notes-title">تعليمات وإرشادات هامة لحامل التصريح:</div>
+                  <ol className="notes-list text-[9pt]">
+                    <li>يجب الالتزام بملء كافة حقول الاستمارة بالدقة والوضوح التام لتلافي منع الدخول.</li>
+                    <li>لا يحق تغيير قائمة المواد أو إضافة ملحقات بعد الحصول على التوقيع دون مراجعة المسؤول.</li>
+                    <li>تعتبر هذه الاستمارة لاغية بعد مرور 24 ساعة من تاريخ المصادقة الفعلي المحدد أعلاه.</li>
+                  </ol>
                 </div>
               </div>
 
-              {/* تذييل الصفحة */}
-              <div className="footer font-sans">
-                SPD-QP-01,03,01-15 JUN.2023
-              </div>
+              <div className="footer">المنظومة الإلكترونية لتصاريح وزارة الشباب والرياضة</div>
+              <div className="footer-right">Page 1 of 2</div>
             </div>
           )}
 
-          {/* PAGE 2 OFFICIAL SHEET SIMULATION */}
+          {/* صفحة الاستمارة الثانية - قائمة المواد بالتفصيل */}
           {(activeTab === "step2" || activeTab === "preview") && (
             <div
               id="formPage2"
               className="a4-page shadow-2xl relative bg-white mx-auto print-page-break shrink-0"
             >
-              {/* علامة مائية في منتصف الصفحة */}
               <div className="watermark"></div>
 
-              {/* محتوى الصفحة الثانية */}
               <div className="page2-content">
-                {/* العنوان الرئيسي */}
-                <div className="page2-title">قائمة المواد</div>
+                <div className="flex justify-between items-center border-b pb-2 mb-3">
+                  <div className="text-right">
+                    <span className="text-[10px] bg-amber-500 text-slate-900 px-2 py-0.5 rounded font-bold">استمارة مرفقة</span>
+                    <h3 className="text-sm font-bold text-slate-900 mt-1">وزارة الشباب والرياضة - التصاريح الأمنية</h3>
+                  </div>
+                  <div className="text-left font-serif text-[10px] text-slate-500">
+                    {formData.page1.date || getTodayDateString()} :التاريخ
+                  </div>
+                </div>
 
-                {/* الجدول */}
+                <div className="page2-title">قائمة وجدول المواد المصاحبة للتصريح الأمني للتفتيش البوابة</div>
+
+                {/* جدول يحتوي على 25 حقلاً مخصصاً لمنع اختلال القياسات بالترتيب */}
                 <table className="main-table">
                   <thead>
                     <tr>
-                      <th style={{ width: "8%" }}>ت</th>
-                      <th style={{ width: "37%" }}>اسم المادة</th>
-                      <th style={{ width: "55%" }}>الملاحظات</th>
+                      <th style={{ width: "8mm" }}>ت</th>
+                      <th style={{ width: "125mm" }}>تفاصيل ووصف المادة بالتفصيل والدقة</th>
+                      <th style={{ width: "65mm" }}>ملاحظات / الرقم التسلسلي أو المنشأ</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {formData.items.slice(0, 25).map((item, index) => (
+                    {formData.items.map((item, index) => (
                       <tr key={item.id}>
-                        <td className="row-number font-mono">{item.id}</td>
+                        <td className="row-number">{item.id}</td>
                         <td>
                           <input
                             type="text"
-                            className="table-input text-right pr-2 font-sans font-bold"
-                            id={`item${item.id}`}
                             value={item.name}
                             onChange={(e) => handleItemChange(index, "name", e.target.value)}
+                            className="table-input"
+                            placeholder="................................................................................................................"
                           />
                         </td>
                         <td>
                           <input
                             type="text"
-                            className="table-input text-right pr-2 font-sans"
-                            id={`note${item.id}`}
                             value={item.note}
                             onChange={(e) => handleItemChange(index, "note", e.target.value)}
+                            className="table-input"
+                            placeholder="............................................................"
                           />
                         </td>
                       </tr>
@@ -1703,37 +1044,27 @@ export default function App() {
                   </tbody>
                 </table>
 
-                {/* مناطق التوقيع */}
-                <div className="signatures-section" style={{ marginTop: "3mm" }}>
-                  <div className="signature-box-large font-sans" style={{ height: "25mm", fontSize: "9pt", whiteSpace: "normal", justifyContent: "flex-end", alignItems: "center", paddingBottom: "2mm" }}>
-                    ختم وتوقيع مدير قسم المخازن في حال استلام وتسليم مواد من والى المخازن
+                {/* توقيع ومصادقة إضافية للصفحة الثانية لمنع تعديل المواد اليدوية */}
+                <div className="signatures-section mt-4">
+                  <div className="signature-box-large" style={{ height: "24mm", width: "95mm" }}>
+                    مسؤول قسم تفتيش المواد والأقسام الكبرى
+                    <div className="text-[10px] text-slate-500 mt-1">الاسم والتوقيع: ............................</div>
                   </div>
-                  <div className="signature-box-large font-sans" style={{ height: "25mm", fontSize: "9pt", whiteSpace: "normal", justifyContent: "flex-end", alignItems: "center", paddingBottom: "2mm" }}>
-                    اسم وتوقيع موظف التصاريح في الباب الرئيسي
+                  <div className="signature-box-large" style={{ height: "24mm", width: "95mm" }}>
+                    مخول الاستلام / السائق المرافق للشحنة
+                    <div className="text-[10px] text-slate-500 mt-1">الاسم والتوقيع: ............................</div>
                   </div>
                 </div>
               </div>
 
-              {/* تذييل الصفحة */}
-              <div className="footer font-sans">
-                SPD-WI-01,01,01 02 AUG.2023
-              </div>
-              <div className="footer-right font-sans">
-                HSV/m//R
-              </div>
+              <div className="footer">المنظومة الإلكترونية لتصاريح وزارة الشباب والرياضة</div>
+              <div className="footer-right">Page 2 of 2</div>
             </div>
           )}
 
         </div>
 
       </main>
-
-      {/* FOOTER - NO PRINT */}
-      <footer className="no-print bg-slate-900 border-t border-slate-800 text-slate-400 py-3 text-center text-xs mt-auto">
-        <p className="font-sans">
-          نظام استمارات الترخيص الأمني الموحد لقرارات البوابة الأمنية الرئيسية © {new Date().getFullYear()} • وزارة الشباب والرياضة • جمهورية العراق.
-        </p>
-      </footer>
     </div>
   );
 }
