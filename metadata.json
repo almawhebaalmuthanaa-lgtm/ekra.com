@@ -1,0 +1,6 @@
+{
+  "name": "نظام استمارة إدخال وإخراج المواد",
+  "description": "استمارة ذكية تفاعلية لإدخال وإخراج المواد وقائمة المواد التابعة لوزارة الشباب والرياضة",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
